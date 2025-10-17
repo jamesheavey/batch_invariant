@@ -1,8 +1,9 @@
 # Docker image configuration
-IMAGE_NAME ?= batch-invariant-test-4
+IMAGE_NAME ?= llm-batch-invariant
 REGISTRY ?= docker.io
 USERNAME ?= jamesheavey
 TAG ?= latest
+DOCKERFILE ?= Dockerfile.llm
 FULL_IMAGE = $(REGISTRY)/$(USERNAME)/$(IMAGE_NAME):$(TAG)
 
 # Build platforms for multi-arch builds
@@ -17,7 +18,7 @@ help: ## Show this help message
 
 .PHONY: build
 build: ## Build Docker image locally
-	docker build -t $(FULL_IMAGE) .
+	docker build -f $(DOCKERFILE) -t $(FULL_IMAGE) .
 
 .PHONY: buildx-setup
 buildx-setup: ## Setup buildx builder
@@ -27,6 +28,7 @@ buildx-setup: ## Setup buildx builder
 buildx: buildx-setup ## Build multi-platform image with buildx
 	docker buildx build \
 		--platform $(PLATFORMS) \
+		-f $(DOCKERFILE) \
 		-t $(FULL_IMAGE) \
 		--load \
 		.
@@ -35,6 +37,7 @@ buildx: buildx-setup ## Build multi-platform image with buildx
 buildx-push: buildx-setup ## Build and push multi-platform image
 	docker buildx build \
 		--platform $(PLATFORMS) \
+		-f $(DOCKERFILE) \
 		-t $(FULL_IMAGE) \
 		--push \
 		.
@@ -51,26 +54,15 @@ run: ## Run the container
 run-interactive: ## Run container interactively
 	docker run --rm -it --gpus all $(FULL_IMAGE) /bin/bash
 
-.PHONY: test
-test: ## Run tests in container
-	docker run --rm --gpus all $(FULL_IMAGE) python test_batch_invariance.py
-
-.PHONY: test-local
-test-local: ## Run low-level batch invariance tests locally
-	python test_batch_invariance.py
-
-.PHONY: test-model
-test-model: ## Run model generation batch invariance tests locally
-	python test_model_generation.py
-
 .PHONY: clean
 clean: ## Remove local images
 	docker rmi $(FULL_IMAGE) || true
 
 .PHONY: info
 info: ## Show build configuration
-	@echo "Image:     $(FULL_IMAGE)"
-	@echo "Platforms: $(PLATFORMS)"
-	@echo "Registry:  $(REGISTRY)"
-	@echo "Username:  $(USERNAME)"
+	@echo "Image:      $(FULL_IMAGE)"
+	@echo "Dockerfile: $(DOCKERFILE)"
+	@echo "Platforms:  $(PLATFORMS)"
+	@echo "Registry:   $(REGISTRY)"
+	@echo "Username:   $(USERNAME)"
 
