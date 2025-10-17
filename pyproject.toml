@@ -12,7 +12,10 @@ authors = [
 requires-python = ">=3.8"
 dependencies = [
     "torch",
-    "triton"
+    "triton",
+    "transformers",
+    "rich",
+    "accelerate"
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
