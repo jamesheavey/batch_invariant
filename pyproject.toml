@@ -15,7 +15,10 @@ dependencies = [
     "triton",
     "transformers",
     "rich",
-    "accelerate"
+    "accelerate",
+    "modal",
+    "vllm",
+    "httpx"
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
