@@ -94,9 +94,44 @@ The test generates text for the same prompt using greedy decoding across multipl
 
 **With batch-invariant operations:** The same input produces identical outputs across all batch contexts, ensuring true determinism.
 
-## Deterministic Inference in vLLM
+## Deterministic vLLM Deployment 🚀
 
-`deterministic_vllm_inference.py` shows an proof of concept of validating that vLLM can be made deterministic with a minor upstream PR to use this library. Without the upstream PR, we see that out of 1000 random length 100 completions we see 18 unique samples. After the upstream PR, there is only one unique sample.
+We provide a **production-ready Docker setup** for running vLLM with batch-invariant ops enabled, ensuring deterministic outputs at `temperature=0`.
+
+### Quick Start
+
+```bash
+# Start vLLM server with batch-invariant ops
+make vllm-compose-up
+
+# Test determinism (sends 100 concurrent requests)
+make vllm-test
+```
+
+The server will be available at `http://localhost:8000` with full OpenAI API compatibility.
+
+### What You Get
+
+- ✅ **Deterministic inference** at temperature=0 (identical outputs for identical prompts, even with dynamic batching)
+- ✅ **Docker & Docker Compose** configurations for easy deployment
+- ✅ **OpenAI-compatible API** - drop-in replacement for OpenAI clients
+- ✅ **Comprehensive test suite** to verify determinism
+- ✅ **Production-ready** with health checks, logging, and GPU support
+
+### Documentation
+
+- **[QUICKSTART_VLLM.md](QUICKSTART_VLLM.md)** - Get started in 5 minutes
+- **[vllm/README.md](vllm/README.md)** - Full documentation and configuration options
+- **[vllm/example_client.py](vllm/example_client.py)** - Python client examples
+
+### Validation
+
+The `deterministic_vllm_inference.py` script validates determinism by sending 1000 concurrent requests:
+
+- **Without batch-invariant ops**: 18 unique outputs (non-deterministic)
+- **With batch-invariant ops**: 1 unique output (deterministic) ✓
+
+This demonstrates how dynamic batching in production LLM serving can cause non-determinism, and how batch-invariant operations solve this problem.
 
 ## Supported Operations
 

@@ -66,3 +66,77 @@ info: ## Show build configuration
 	@echo "Registry:   $(REGISTRY)"
 	@echo "Username:   $(USERNAME)"
 
+# vLLM targets
+VLLM_IMAGE_NAME ?= vllm-batch-invariant
+VLLM_TAG ?= latest
+VLLM_FULL_IMAGE = $(REGISTRY)/$(USERNAME)/$(VLLM_IMAGE_NAME):$(VLLM_TAG)
+VLLM_MODEL ?= meta-llama/Llama-3.1-8B-Instruct
+VLLM_PORT ?= 8000
+
+.PHONY: vllm-build
+vllm-build: ## Build vLLM Docker image
+	docker build -f Dockerfile.vllm -t $(VLLM_FULL_IMAGE) .
+
+.PHONY: vllm-run
+vllm-run: ## Run vLLM server with batch-invariant ops
+	docker run --rm --gpus all \
+		-p $(VLLM_PORT):8000 \
+		-v ~/.cache/huggingface:/root/.cache/huggingface \
+		--shm-size 16g \
+		-e MODEL_NAME=$(VLLM_MODEL) \
+		$(VLLM_FULL_IMAGE)
+
+.PHONY: vllm-run-detached
+vllm-run-detached: ## Run vLLM server in detached mode
+	docker run -d --name vllm-deterministic --gpus all \
+		-p $(VLLM_PORT):8000 \
+		-v ~/.cache/huggingface:/root/.cache/huggingface \
+		--shm-size 16g \
+		-e MODEL_NAME=$(VLLM_MODEL) \
+		$(VLLM_FULL_IMAGE)
+
+.PHONY: vllm-compose-up
+vllm-compose-up: ## Start vLLM with docker-compose
+	docker-compose -f vllm/docker-compose.yml up --build
+
+.PHONY: vllm-compose-up-detached
+vllm-compose-up-detached: ## Start vLLM with docker-compose (detached)
+	docker-compose -f vllm/docker-compose.yml up -d --build
+
+.PHONY: vllm-compose-down
+vllm-compose-down: ## Stop vLLM docker-compose services
+	docker-compose -f vllm/docker-compose.yml down
+
+.PHONY: vllm-compose-logs
+vllm-compose-logs: ## View vLLM docker-compose logs
+	docker-compose -f vllm/docker-compose.yml logs -f
+
+.PHONY: vllm-test
+vllm-test: ## Test vLLM determinism (requires running server)
+	python vllm/test_determinism.py --requests 100 --concurrency 10
+
+.PHONY: vllm-stop
+vllm-stop: ## Stop running vLLM container
+	docker stop vllm-deterministic || true
+	docker rm vllm-deterministic || true
+
+.PHONY: vllm-logs
+vllm-logs: ## Show logs from vLLM container
+	docker logs -f vllm-deterministic
+
+.PHONY: vllm-shell
+vllm-shell: ## Open shell in vLLM container
+	docker exec -it vllm-deterministic /bin/bash
+
+.PHONY: vllm-push
+vllm-push: ## Push vLLM image to registry
+	docker push $(VLLM_FULL_IMAGE)
+
+.PHONY: vllm-info
+vllm-info: ## Show vLLM configuration
+	@echo "vLLM Image:  $(VLLM_FULL_IMAGE)"
+	@echo "Model:       $(VLLM_MODEL)"
+	@echo "Port:        $(VLLM_PORT)"
+	@echo "Registry:    $(REGISTRY)"
+	@echo "Username:    $(USERNAME)"
+

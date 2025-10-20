@@ -7,6 +7,6 @@ COPY batch_invariant_ops/ ./batch_invariant_ops/
 
 RUN pip install --no-cache-dir -e .
 
-COPY test_llm.py ./
+COPY test_model.py ./
 
-CMD ["python", "test_llm.py"]
+CMD ["python", "test_model.py"]
