@@ -29,10 +29,3 @@ serve-custom:
 test:
 	python deterministic_vllm_inference.py
 
-# Clean Python cache files
-clean:
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete
-	find . -type f -name "*.pyo" -delete
-	find . -type f -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
-
