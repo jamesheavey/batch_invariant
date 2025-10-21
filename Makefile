@@ -9,7 +9,9 @@ VLLM = $(VENV)/bin/vllm
 install:
 	@echo "Creating virtual environment..."
 	python3 -m venv $(VENV)
-	@echo "Installing dependencies..."
+	@echo "Installing PyTorch nightly (CUDA 13.0)..."
+	$(PIP) install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu130
+	@echo "Installing package dependencies..."
 	$(PIP) install -e .
 
 # Serve vLLM inference endpoint with Qwen3-8B (default)

@@ -11,7 +11,7 @@ authors = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "torch>=2.9.0",
+    # torch is installed separately via Makefile from nightly index
     "triton",
     "transformers",
     "rich",
