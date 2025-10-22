@@ -11,7 +11,7 @@ authors = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "torch>=2.9.0",
+    "torch>=2.8.0",
     "triton",
     "transformers",
     "rich",
